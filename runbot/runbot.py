@@ -983,7 +983,7 @@ class RunbotController(http.Controller):
         repo_ids = repo_obj.search(cr, uid, [], order='id')
         repos = repo_obj.browse(cr, uid, repo_ids)
         if not repo and repos:
-            repo = repos[0] 
+            repo = repos[-1]
 
         context = {
             'repos': repos,
