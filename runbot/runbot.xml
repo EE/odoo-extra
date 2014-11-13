@@ -245,7 +245,8 @@
     <template id="runbot.build_button">
         <div t-attf-class="pull-right">
             <div t-attf-class="btn-group {{klass}}">
-                <a t-if="bu['state']=='running'" t-attf-href="http://{{bu['domain']}}/?db={{bu['dest']}}-all" class="btn btn-primary"><i class="fa fa-sign-in"/></a>
+                <a t-if="bu['state']=='running'" t-attf-href="http://{{bu['domain']}}/?db={{bu['dest']}}-ucw" class="btn btn-primary"><i class="fa fa-sign-in"/></a>
+                <a t-if="bu['state']=='running'" t-attf-href="http://{{bu['domain']}}/?db={{bu['dest']}}-fpbz" class="btn btn-warning"><i class="fa fa-sign-in"/></a>		
                 <a t-attf-href="/runbot/build/{{bu['id']}}" class="btn btn-default"><i class="fa fa-file-text-o"/></a>
                 <a t-attf-href="https://#{repo.base}/commit/#{bu['name']}" class="btn btn-default"><i class="fa fa-github"/></a>
                 <button class="btn btn-default dropdown-toggle" data-toggle="dropdown"><i class="fa fa-cog"/><span class="caret"></span></button>
@@ -254,8 +255,8 @@
                         <a href="#" class="runbot-rebuild" t-att-data-runbot-build="bu['id']">Force Build <i class="fa fa-level-up"></i></a>
                     </li>
                     <t t-if="bu['state']=='running'">
-                        <li><a t-attf-href="http://{{bu['domain']}}/?db={{bu['real_dest']}}-all">Connect all <i class="fa fa-sign-in"></i></a></li>
-                        <li><a t-attf-href="http://{{bu['domain']}}/?db={{bu['real_dest']}}-base">Connect base <i class="fa fa-sign-in"></i></a></li>
+                        <li><a t-attf-href="http://{{bu['domain']}}/?db={{bu['real_dest']}}-ucw">Connect UCW <i class="fa fa-sign-in"></i></a></li>
+                        <li><a t-attf-href="http://{{bu['domain']}}/?db={{bu['real_dest']}}-fpbz">Connect FPBŻ <i class="fa fa-sign-in"></i></a></li>
                         <li><a t-attf-href="http://{{bu['domain']}}/">Connect <i class="fa fa-sign-in"></i></a></li>
                     </t>
                     <li t-if="bu['state'] in ['done','running'] and bu_index==0">
@@ -263,8 +264,8 @@
                     </li>
                     <li t-if="bu['state']!='testing' and bu['state']!='pending'" class="divider"></li>
                     <li><a t-attf-href="/runbot/build/{{bu['id']}}">Logs <i class="fa fa-file-text-o"/></a></li>
-                    <li><a t-attf-href="http://{{bu['host']}}/runbot/static/build/#{bu['real_dest']}/logs/job_10_test_base.txt">Full base logs <i class="fa fa-file-text-o"/></a></li>
-                    <li><a t-attf-href="http://{{bu['host']}}/runbot/static/build/#{bu['real_dest']}/logs/job_20_test_all.txt">Full all logs <i class="fa fa-file-text-o"/></a></li>
+                    <li><a t-attf-href="http://{{bu['host']}}/runbot/static/build/#{bu['real_dest']}/logs/job_10_test_ucw.txt">Full UCW logs <i class="fa fa-file-text-o"/></a></li>
+                    <li><a t-attf-href="http://{{bu['host']}}/runbot/static/build/#{bu['real_dest']}/logs/job_20_test_fpbz.txt">Full FPBŻ logs <i class="fa fa-file-text-o"/></a></li>
                     <li t-if="bu['state']!='pending'" class="divider"></li>
                     <li><a t-attf-href="{{br['branch'].branch_url}}">Branch or pull <i class="fa fa-github"/></a></li>
                     <li><a t-attf-href="https://{{repo.base}}/commit/{{bu['name']}}">Commit <i class="fa fa-github"/></a></li>

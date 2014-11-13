@@ -748,26 +748,26 @@ class runbot_build(osv.osv):
             except Exception:
                 _logger.exception("github status error")
 
-    def job_10_test_base(self, cr, uid, build, lock_path, log_path):
-        build._log('test_base', 'Start test base module')
+    def job_10_test_ucw(self, cr, uid, build, lock_path, log_path):
+        build._log('test_ucw', 'Start test UCW module')
         build.github_status()
         # checkout source
         build.checkout()
         # run base test
-        self.pg_createdb(cr, uid, "%s-base" % build.dest)
+        self.pg_createdb(cr, uid, "%s-ucw" % build.dest)
         cmd, mods = build.cmd()
         if grep(build.server("tools/config.py"), "test-enable"):
             cmd.append("--test-enable")
-        cmd += ['-d', '%s-base' % build.dest, '-i', 'base', '--stop-after-init', '--log-level=test', '--max-cron-threads=0']
+        cmd += ['-d', '%s-ucw' % build.dest, '-i', 'bestja_configuration_ucw', '--stop-after-init', '--log-level=test', '--max-cron-threads=0']
         return self.spawn(cmd, lock_path, log_path, cpu_limit=300)
 
-    def job_20_test_all(self, cr, uid, build, lock_path, log_path):
-        build._log('test_all', 'Start test all modules')
-        self.pg_createdb(cr, uid, "%s-all" % build.dest)
+    def job_20_test_fpbz(self, cr, uid, build, lock_path, log_path):
+        build._log('test_fpbz', 'Start test FPBZ modules')
+        self.pg_createdb(cr, uid, "%s-fpbz" % build.dest)
         cmd, mods = build.cmd()
         if grep(build.server("tools/config.py"), "test-enable"):
             cmd.append("--test-enable")
-        cmd += ['-d', '%s-all' % build.dest, '-i', mods, '--stop-after-init', '--log-level=test', '--max-cron-threads=0']
+        cmd += ['-d', '%s-fpbz' % build.dest, '-i', 'bestja_configuration_fpbz', '--stop-after-init', '--log-level=test', '--max-cron-threads=0']
         # reset job_start to an accurate job_20 job_time
         build.write({'job_start': now()})
         return self.spawn(cmd, lock_path, log_path, cpu_limit=2100)
@@ -775,20 +775,21 @@ class runbot_build(osv.osv):
     def job_30_run(self, cr, uid, build, lock_path, log_path):
         # adjust job_end to record an accurate job_20 job_time
         build._log('run', 'Start running build %s' % build.dest)
-        log_all = build.path('logs', 'job_20_test_all.txt')
-        log_time = time.localtime(os.path.getmtime(log_all))
+        logs = [build.path('logs', 'job_10_test_ucw.txt'), build.path('logs', 'job_20_test_fpbz.txt')]
+        log_time = time.localtime(os.path.getmtime(logs[-1]))
         v = {
             'job_end': time.strftime(openerp.tools.DEFAULT_SERVER_DATETIME_FORMAT, log_time),
         }
-        if grep(log_all, ".modules.loading: Modules loaded."):
-            if rfind(log_all, _re_error):
+        for log in logs:
+            if grep(log, ".modules.loading: Modules loaded."):
+                if rfind(log, _re_error):
+                    v['result'] = "ko"
+                elif rfind(log, _re_warning) and not v.get('result') == 'ko':
+                    v['result'] = "warn"
+                elif (not grep(build.server("test/common.py"), "post_install") or grep(log, "Initiating shutdown.")) and (not v.get('result') or v['result'] == 'ok'):
+                    v['result'] = "ok"
+            else:
                 v['result'] = "ko"
-            elif rfind(log_all, _re_warning):
-                v['result'] = "warn"
-            elif not grep(build.server("test/common.py"), "post_install") or grep(log_all, "Initiating shutdown."):
-                v['result'] = "ok"
-        else:
-            v['result'] = "ko"
         build.write(v)
         build.github_status()
 
@@ -802,7 +803,7 @@ class runbot_build(osv.osv):
             # not sure, to avoid old server to check other dbs
             cmd += ["--max-cron-threads", "0"]
 
-        cmd += ['-d', "%s-all" % build.dest]
+        cmd += ['-d', "%s-fpbz" % build.dest]
 
         if grep(build.server("tools/config.py"), "db-filter"):
             cmd += ['--db-filter','%s.*$' % build.dest]
@@ -919,8 +920,8 @@ class runbot_build(osv.osv):
                 pass
             build.write({'state': 'done'})
             cr.commit()
-            self.pg_dropdb(cr, uid, "%s-base" % build.dest)
-            self.pg_dropdb(cr, uid, "%s-all" % build.dest)
+            self.pg_dropdb(cr, uid, "%s-ucw" % build.dest)
+            self.pg_dropdb(cr, uid, "%s-fpbz" % build.dest)
             if os.path.isdir(build.path()):
                 shutil.rmtree(build.path())
 
