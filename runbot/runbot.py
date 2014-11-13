@@ -805,10 +805,7 @@ class runbot_build(osv.osv):
         cmd += ['-d', "%s-all" % build.dest]
 
         if grep(build.server("tools/config.py"), "db-filter"):
-            if build.repo_id.nginx:
-                cmd += ['--db-filter','%d.*$']
-            else:
-                cmd += ['--db-filter','%s.*$' % build.dest]
+            cmd += ['--db-filter','%s.*$' % build.dest]
 
         ## Web60
         #self.client_web_path=os.path.join(self.running_path,"client-web")
