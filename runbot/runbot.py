@@ -676,6 +676,7 @@ class runbot_build(osv.osv):
                 server_path,
                 "--no-xmlrpcs",
                 "--xmlrpc-port=%d" % build.port,
+                "--load-language=pl_PL",
             ]
             # options
             if grep(build.server("tools/config.py"), "no-netrpc"):
