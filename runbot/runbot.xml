@@ -246,12 +246,12 @@
         <div t-attf-class="pull-right">
             <div t-attf-class="btn-group {{klass}}">
                 <a t-if="bu['state']=='running'" t-attf-href="http://{{bu['domain']}}/?db={{bu['dest']}}-ucw" class="btn btn-primary"><i class="fa fa-sign-in"/></a>
-                <a t-if="bu['state']=='running'" t-attf-href="http://{{bu['domain']}}/?db={{bu['dest']}}-fpbz" class="btn btn-warning"><i class="fa fa-sign-in"/></a>		
+                <a t-if="bu['state']=='running'" t-attf-href="http://{{bu['domain']}}/?db={{bu['dest']}}-fpbz" class="btn btn-warning"><i class="fa fa-sign-in"/></a>
                 <a t-attf-href="/runbot/build/{{bu['id']}}" class="btn btn-default"><i class="fa fa-file-text-o"/></a>
                 <a t-attf-href="https://#{repo.base}/commit/#{bu['name']}" class="btn btn-default"><i class="fa fa-github"/></a>
                 <button class="btn btn-default dropdown-toggle" data-toggle="dropdown"><i class="fa fa-cog"/><span class="caret"></span></button>
                 <ul class="dropdown-menu" role="menu">
-                    <li t-if="bu['result']=='skipped'">
+                    <li t-if="bu['result']=='skipped' and website.user_id != user_id">
                         <a href="#" class="runbot-rebuild" t-att-data-runbot-build="bu['id']">Force Build <i class="fa fa-level-up"></i></a>
                     </li>
                     <t t-if="bu['state']=='running'">
@@ -259,7 +259,7 @@
                         <li><a t-attf-href="http://{{bu['domain']}}/?db={{bu['real_dest']}}-fpbz">Connect FPBŻ <i class="fa fa-sign-in"></i></a></li>
                         <li><a t-attf-href="http://{{bu['domain']}}/">Connect <i class="fa fa-sign-in"></i></a></li>
                     </t>
-                    <li t-if="bu['state'] in ['done','running'] and bu_index==0">
+                    <li t-if="bu['state'] in ['done','running'] and bu_index==0 and website.user_id != user_id">
                         <a href="#" class="runbot-rebuild" t-att-data-runbot-build="bu['id']">Rebuild <i class="fa fa-refresh"/></a>
                     </li>
                     <li t-if="bu['state']!='testing' and bu['state']!='pending'" class="divider"></li>
@@ -351,7 +351,7 @@
                                     <t t-esc="hs['host']"/>: <t t-esc="hs['testing']"/> testing, <t t-esc="hs['running']"/> running
                                 </span>
                                 <span class="navbar-brand navbar-right">
-                                  Pending: <t t-esc="pending_total"/> 
+                                  Pending: <t t-esc="pending_total"/>
                                 </span>
                               </t>
                             </div>
@@ -365,7 +365,7 @@
                         <tr>
                             <th>Branch</th>
                             <td colspan="4" class="text-right">
-                                <t t-esc="repo.base"/>: 
+                                <t t-esc="repo.base"/>:
                                 <t t-esc="testing"/> testing,
                                 <t t-esc="running"/> running,
                                 <t t-esc="pending"/> pending.
