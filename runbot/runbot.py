@@ -363,6 +363,21 @@ class runbot_repo(osv.osv):
             build_ids = self.pool['runbot.build'].search(cr, uid, [('repo_id','in',ids), ('state','=','running')])
             settings['builds'] = self.pool['runbot.build'].browse(cr, uid, build_ids)
 
+            try:
+                staging_id = self.pool['runbot.build'].search(
+                    cr,
+                    uid,
+                    [('repo_id','in',ids), ('state','=','running'), ('dest', '=like', '%staging%')],
+                    order='id desc',
+                )[0]
+            except IndexError:
+                staging_id = None
+
+            if staging_id:
+                settings['staging_build'] = self.pool['runbot.build'].browse(cr, uid, staging_id)
+            else:
+                settings['staging_build'] = False
+
             nginx_config = self.pool['ir.ui.view'].render(cr, uid, "runbot.nginx_config", settings)
             mkdirs([nginx_dir])
             open(os.path.join(nginx_dir, 'nginx.conf'),'w').write(nginx_config)
@@ -494,9 +509,9 @@ class runbot_build(osv.osv):
 
         # detect duplicate
         domain = [
-            ('repo_id','=',build.repo_id.duplicate_id.id), 
-            ('name', '=', build.name), 
-            ('duplicate_id', '=', False), 
+            ('repo_id','=',build.repo_id.duplicate_id.id),
+            ('name', '=', build.name),
+            ('duplicate_id', '=', False),
             '|', ('result', '=', False), ('result', '!=', 'skipped')
         ]
         duplicate_ids = self.search(cr, uid, domain, context=context)
@@ -1018,20 +1033,20 @@ class RunbotController(http.Controller):
                 branch_ids = uniq_list(sticky_branch_ids + [br[0] for br in cr.fetchall()])
 
                 build_query = """
-                    SELECT 
-                        branch_id, 
+                    SELECT
+                        branch_id,
                         max(case when br_bu.row = 1 then br_bu.build_id end),
                         max(case when br_bu.row = 2 then br_bu.build_id end),
                         max(case when br_bu.row = 3 then br_bu.build_id end),
                         max(case when br_bu.row = 4 then br_bu.build_id end)
                     FROM (
-                        SELECT 
-                            br.id AS branch_id, 
+                        SELECT
+                            br.id AS branch_id,
                             bu.id AS build_id,
                             row_number() OVER (PARTITION BY branch_id) AS row
-                        FROM 
-                            runbot_branch br INNER JOIN runbot_build bu ON br.id=bu.branch_id 
-                        WHERE 
+                        FROM
+                            runbot_branch br INNER JOIN runbot_build bu ON br.id=bu.branch_id
+                        WHERE
                             br.id in %s
                         GROUP BY br.id, bu.id
                         ORDER BY br.id, bu.id DESC
