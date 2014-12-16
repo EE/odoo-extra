@@ -567,6 +567,7 @@ http {
                     '"$http_referer" "$http_user_agent" $request_time';
     access_log <t t-esc="nginx_dir"/>/access.log full;
     client_body_temp_path <t t-esc="nginx_dir"/>;
+    client_max_body_size 30M;
     fastcgi_temp_path <t t-esc="nginx_dir"/>;
 
     autoindex on;
